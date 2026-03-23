@@ -6,35 +6,66 @@
 <title>QF Voice Assistant</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  :root { --bg: #0a0e17; --surface: #111827; --border: #1f2937; --accent: #3b82f6; --text: #f9fafb; --muted: #6b7280; }
-  body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 32px; padding: 24px; }
-  .logo-row { display: flex; align-items: center; gap: 12px; }
-  .logo { width: 48px; height: 48px; background: var(--accent); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px; }
+  body {
+    background: #0a0e17;
+    color: #f9fafb;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 28px;
+    padding: 24px;
+  }
+  .header { text-align: center; }
+  .logo { font-size: 48px; margin-bottom: 8px; }
   h1 { font-size: 22px; font-weight: 700; }
-  .sub { font-size: 13px; color: var(--muted); margin-top: 2px; }
-  .widget-wrap { width: 100%; max-width: 380px; }
-  .instructions { text-align: center; font-size: 13px; color: var(--muted); line-height: 1.6; max-width: 300px; }
+  .sub { font-size: 13px; color: #6b7280; margin-top: 4px; }
+  .widget-box {
+    width: 100%;
+    max-width: 400px;
+    background: #111827;
+    border: 1px solid #1f2937;
+    border-radius: 16px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+  }
   elevenlabs-convai { width: 100%; }
+  .note { font-size: 12px; color: #6b7280; text-align: center; max-width: 280px; line-height: 1.6; }
 </style>
 </head>
 <body>
-  <div class="logo-row">
+  <div class="header">
     <div class="logo">🎙</div>
-    <div>
-      <h1>QF Voice Assistant</h1>
-      <div class="sub">QuotingFast AI — Powered by ElevenLabs</div>
-    </div>
+    <h1>QF Voice Assistant</h1>
+    <div class="sub">QuotingFast AI</div>
   </div>
 
-  <div class="widget-wrap">
-    <elevenlabs-convai agent-id="agent_2901kme8psk8ff1a364rtt1p77ag"></elevenlabs-convai>
-  </div>
-
-  <div class="instructions">
-    Tap the mic button to start talking.<br>
-    The assistant will speak back to you automatically.
+  <div class="widget-box">
+    <elevenlabs-convai
+      agent-id="agent_2901kme8psk8ff1a364rtt1p77ag"
+      action="start"
+    ></elevenlabs-convai>
+    <div class="note">Tap the mic to talk · AI speaks back automatically</div>
   </div>
 
   <script src="https://elevenlabs.io/convai-widget/index.js" async type="text/javascript"></script>
+
+  <script>
+    // Force voice mode once widget loads
+    window.addEventListener('load', () => {
+      setTimeout(() => {
+        const widget = document.querySelector('elevenlabs-convai');
+        if (widget && widget.shadowRoot) {
+          console.log('Widget loaded');
+        }
+      }, 2000);
+    });
+  </script>
 </body>
 </html>
+<!-- force redeploy Mon Mar 23 21:17:05 UTC 2026 -->
