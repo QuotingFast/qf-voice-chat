@@ -31,6 +31,7 @@ function handleClientConnection(clientSocket) {
   const conversationHistory = [];
   let deepgramLive = null;
   let currentTranscript = '';
+  let latestTranscript = ''; // tracks most recent (interim or final)
   let speechTimer = null;
   let isProcessing = false;
 
@@ -58,6 +59,7 @@ function handleClientConnection(clientSocket) {
       const speechFinal = data.speech_final;
       if (!transcript.trim()) return;
       send({ type: 'transcript', text: transcript, isFinal: isFinal || speechFinal });
+      latestTranscript = transcript; // track most recent regardless of finality
       if (isFinal) currentTranscript = transcript;
       if (speechFinal && currentTranscript.trim() && !isProcessing) {
         if (speechTimer) clearTimeout(speechTimer);
@@ -153,13 +155,15 @@ function handleClientConnection(clientSocket) {
       const msg = JSON.parse(raw.toString());
       if (msg.type === 'start') { isProcessing = false; startDeepgram(); }
       else if (msg.type === 'stop') {
-        const pendingText = currentTranscript.trim();
+        // Use best available transcript: prefer is_final result, fall back to latest interim
+        const pendingText = (currentTranscript || latestTranscript).trim();
         if (deepgramLive) {
           try { deepgramLive.finalize(); } catch (e) {}
           try { deepgramLive.finish(); } catch (e) {}
           deepgramLive = null;
         }
         currentTranscript = '';
+        latestTranscript = '';
         if (pendingText && !isProcessing) {
           processUserInput(pendingText);
         } else if (!isProcessing) {
