@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>QF Voice Assistant</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  
+  :root {
+    --bg: #0a0e17;
+    --surface: #111827;
+    --border: #1f2937;
+    --accent: #3b82f6;
+    --accent-glow: rgba(59,130,246,0.3);
+    --green: #10b981;
+    --yellow: #f59e0b;
+    --red: #ef4444;
+    --text: #f9fafb;
+    --muted: #6b7280;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  header {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--surface);
+  }
+
+  .logo {
+    width: 36px;
+    height: 36px;
+    background: var(--accent);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+  }
+
+  h1 { font-size: 18px; font-weight: 700; }
+  .subtitle { font-size: 12px; color: var(--muted); margin-top: 1px; }
+
+  .status-badge {
+    margin-left: auto;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    transition: all 0.3s;
+  }
+  .status-badge.idle { background: rgba(107,114,128,0.2); color: var(--muted); }
+  .status-badge.listening { background: rgba(16,185,129,0.2); color: var(--green); }
+  .status-badge.thinking { background: rgba(245,158,11,0.2); color: var(--yellow); }
+  .status-badge.speaking { background: rgba(59,130,246,0.2); color: var(--accent); }
+
+  #transcript-container {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .message {
+    max-width: 85%;
+    padding: 10px 14px;
+    border-radius: 12px;
+    font-size: 15px;
+    line-height: 1.5;
+    animation: fadeIn 0.2s ease;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .message.user {
+    align-self: flex-end;
+    background: var(--accent);
+    color: white;
+    border-bottom-right-radius: 3px;
+  }
+
+  .message.assistant {
+    align-self: flex-start;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-bottom-left-radius: 3px;
+  }
+
+  .message.interim {
+    align-self: flex-end;
+    background: rgba(59,130,246,0.15);
+    border: 1px dashed rgba(59,130,246,0.4);
+    color: var(--muted);
+    font-style: italic;
+    border-bottom-right-radius: 3px;
+  }
+
+  .thinking-dots {
+    align-self: flex-start;
+    padding: 12px 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    border-bottom-left-radius: 3px;
+    display: flex;
+    gap: 6px;
+    align-items: center;
+  }
+
+  .dot {
+    width: 8px; height: 8px;
+    background: var(--muted);
+    border-radius: 50%;
+    animation: bounce 1.4s infinite;
+  }
+  .dot:nth-child(2) { animation-delay: 0.2s; }
+  .dot:nth-child(3) { animation-delay: 0.4s; }
+
+  @keyframes bounce {
+    0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+    30% { transform: translateY(-8px); opacity: 1; }
+  }
+
+  .controls {
+    padding: 20px;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    align-items: center;
+  }
+
+  .mode-toggle {
+    display: flex;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    font-size: 13px;
+  }
+
+  .mode-btn {
+    padding: 6px 16px;
+    background: none;
+    border: none;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 13px;
+  }
+
+  .mode-btn.active {
+    background: var(--accent);
+    color: white;
+  }
+
+  #main-btn {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    border: none;
+    background: var(--accent);
+    color: white;
+    font-size: 28px;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 0 0 0 var(--accent-glow);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  #main-btn:active { transform: scale(0.93); }
+
+  #main-btn.listening {
+    background: var(--red);
+    animation: pulse 1.5s infinite;
+    box-shadow: 0 0 0 0 rgba(239,68,68,0.4);
+  }
+
+  #main-btn.thinking, #main-btn.speaking {
+    background: var(--yellow);
+    cursor: default;
+  }
+
+  @keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(239,68,68,0.5); }
+    70% { box-shadow: 0 0 0 16px rgba(239,68,68,0); }
+    100% { box-shadow: 0 0 0 0 rgba(239,68,68,0); }
+  }
+
+  .btn-hint {
+    font-size: 12px;
+    color: var(--muted);
+    text-align: center;
+  }
+
+  .bottom-row {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+  }
+
+  .icon-btn {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    border-radius: 8px;
+    padding: 8px 14px;
+    cursor: pointer;
+    font-size: 13px;
+    transition: all 0.2s;
+  }
+  .icon-btn:hover { border-color: var(--accent); color: var(--text); }
+
+  .volume-visualizer {
+    display: flex;
+    gap: 3px;
+    align-items: center;
+    height: 24px;
+  }
+
+  .vol-bar {
+    width: 4px;
+    background: var(--accent);
+    border-radius: 2px;
+    transition: height 0.05s;
+    opacity: 0.6;
+  }
+
+  #error-banner {
+    display: none;
+    background: rgba(239,68,68,0.15);
+    border: 1px solid rgba(239,68,68,0.4);
+    color: #fca5a5;
+    padding: 10px 16px;
+    font-size: 13px;
+    text-align: center;
+  }
+
+  /* Audio playing indicator */
+  .audio-wave {
+    display: none;
+    gap: 3px;
+    align-items: center;
+    height: 24px;
+  }
+  .audio-wave.active { display: flex; }
+  .wave-bar {
+    width: 3px;
+    background: var(--accent);
+    border-radius: 2px;
+    animation: wave 0.8s infinite;
+  }
+  .wave-bar:nth-child(2) { animation-delay: 0.1s; }
+  .wave-bar:nth-child(3) { animation-delay: 0.2s; }
+  .wave-bar:nth-child(4) { animation-delay: 0.3s; }
+  .wave-bar:nth-child(5) { animation-delay: 0.4s; }
+  @keyframes wave {
+    0%, 100% { height: 4px; }
+    50% { height: 20px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">🎙</div>
+  <div>
+    <h1>QF Voice Assistant</h1>
+    <div class="subtitle">QuotingFast AI</div>
+  </div>
+  <div class="status-badge idle" id="status-badge">Idle</div>
+</header>
+
+<div id="error-banner"></div>
+
+<div id="transcript-container">
+  <div class="message assistant">Hey Tom! Hit the mic button and start talking. I'm ready.</div>
+</div>
+
+<div class="controls">
+  <div class="mode-toggle">
+    <button class="mode-btn active" id="btn-ptt" onclick="setMode('ptt')">Push to Talk</button>
+    <button class="mode-btn" id="btn-vad" onclick="setMode('vad')">Auto VAD</button>
+  </div>
+
+  <div class="bottom-row">
+    <div class="volume-visualizer" id="vol-viz">
+      <div class="vol-bar" style="height:4px" id="vb1"></div>
+      <div class="vol-bar" style="height:4px" id="vb2"></div>
+      <div class="vol-bar" style="height:4px" id="vb3"></div>
+      <div class="vol-bar" style="height:4px" id="vb4"></div>
+      <div class="vol-bar" style="height:4px" id="vb5"></div>
+    </div>
+
+    <button id="main-btn" ontouchstart="btnTouchStart(event)" ontouchend="btnTouchEnd(event)" onmousedown="btnMouseDown()" onmouseup="btnMouseUp()">🎙</button>
+
+    <div class="audio-wave" id="audio-wave">
+      <div class="wave-bar"></div>
+      <div class="wave-bar"></div>
+      <div class="wave-bar"></div>
+      <div class="wave-bar"></div>
+      <div class="wave-bar"></div>
+    </div>
+  </div>
+
+  <div class="btn-hint" id="btn-hint">Hold to talk</div>
+
+  <button class="icon-btn" onclick="clearHistory()">🗑 Clear Chat</button>
+</div>
+
+<script>
+let ws = null;
+let mode = 'ptt'; // 'ptt' or 'vad'
+let state = 'idle'; // idle | listening | thinking | speaking
+let mediaStream = null;
+let audioContext = null;
+let processor = null;
+let analyser = null;
+let isConnected = false;
+let interimDiv = null;
+let thinkingDiv = null;
+let currentAssistantDiv = null;
+let audioQueue = [];
+let isPlayingAudio = false;
+let audioCtxForPlayback = null;
+
+// Audio chunk accumulator
+let audioChunks = [];
+
+// ── WebSocket ──────────────────────────────────────────────────────────────
+
+function connect() {
+  const proto = location.protocol === 'https:' ? 'wss' : 'ws';
+  ws = new WebSocket(`${proto}://${location.host}/ws`);
+
+  ws.onopen = () => {
+    isConnected = true;
+    console.log('WS connected');
+  };
+
+  ws.onmessage = (e) => {
+    const msg = JSON.parse(e.data);
+    handleMessage(msg);
+  };
+
+  ws.onclose = () => {
+    isConnected = false;
+    setTimeout(connect, 2000);
+  };
+
+  ws.onerror = (e) => console.error('WS error', e);
+}
+
+function send(obj) {
+  if (ws && ws.readyState === WebSocket.OPEN) {
+    ws.send(JSON.stringify(obj));
+  }
+}
+
+// ── Message handling ────────────────────────────────────────────────────────
+
+function handleMessage(msg) {
+  switch (msg.type) {
+    case 'status':
+      setState(msg.state);
+      break;
+    case 'transcript':
+      showInterim(msg.text, msg.isFinal);
+      break;
+    case 'userMessage':
+      showInterim(null);
+      addMessage('user', msg.text);
+      showThinking(true);
+      break;
+    case 'assistantChunk':
+      showThinking(false);
+      appendAssistant(msg.text);
+      break;
+    case 'assistantMessage':
+      finalizeAssistant();
+      break;
+    case 'audio':
+      queueAudio(msg.data);
+      break;
+    case 'historyCleared':
+      document.getElementById('transcript-container').innerHTML = '<div class="message assistant">History cleared. What\'s up?</div>';
+      break;
+    case 'error':
+      showError(msg.message);
+      break;
+  }
+}
+
+// ── State / UI ──────────────────────────────────────────────────────────────
+
+function setState(newState) {
+  state = newState;
+  const badge = document.getElementById('status-badge');
+  const btn = document.getElementById('main-btn');
+  const hint = document.getElementById('btn-hint');
+  const wave = document.getElementById('audio-wave');
+
+  badge.className = 'status-badge ' + newState;
+  badge.textContent = newState.charAt(0).toUpperCase() + newState.slice(1);
+
+  btn.className = '';
+  wave.classList.remove('active');
+
+  if (newState === 'listening') {
+    btn.classList.add('listening');
+    btn.textContent = '🔴';
+    hint.textContent = mode === 'ptt' ? 'Release to stop' : 'Listening... (click to stop)';
+  } else if (newState === 'thinking') {
+    btn.classList.add('thinking');
+    btn.textContent = '⏳';
+    hint.textContent = 'Processing...';
+  } else if (newState === 'speaking') {
+    btn.classList.add('speaking');
+    btn.textContent = '🔊';
+    hint.textContent = 'Speaking...';
+    wave.classList.add('active');
+  } else {
+    btn.textContent = '🎙';
+    hint.textContent = mode === 'ptt' ? 'Hold to talk' : 'Click to start';
+  }
+}
+
+function showError(msg) {
+  const banner = document.getElementById('error-banner');
+  banner.textContent = '⚠️ ' + msg;
+  banner.style.display = 'block';
+  setTimeout(() => banner.style.display = 'none', 5000);
+}
+
+function showInterim(text, isFinal) {
+  const container = document.getElementById('transcript-container');
+  if (!text) {
+    if (interimDiv) { interimDiv.remove(); interimDiv = null; }
+    return;
+  }
+  if (!interimDiv) {
+    interimDiv = document.createElement('div');
+    interimDiv.className = 'message interim';
+    container.appendChild(interimDiv);
+  }
+  interimDiv.textContent = text;
+  container.scrollTop = container.scrollHeight;
+}
+
+function showThinking(show) {
+  const container = document.getElementById('transcript-container');
+  if (show && !thinkingDiv) {
+    thinkingDiv = document.createElement('div');
+    thinkingDiv.className = 'thinking-dots';
+    thinkingDiv.innerHTML = '<div class="dot"></div><div class="dot"></div><div class="dot"></div>';
+    container.appendChild(thinkingDiv);
+    container.scrollTop = container.scrollHeight;
+  } else if (!show && thinkingDiv) {
+    thinkingDiv.remove();
+    thinkingDiv = null;
+  }
+}
+
+function addMessage(role, text) {
+  const container = document.getElementById('transcript-container');
+  const div = document.createElement('div');
+  div.className = 'message ' + role;
+  div.textContent = text;
+  container.appendChild(div);
+  container.scrollTop = container.scrollHeight;
+  return div;
+}
+
+function appendAssistant(chunk) {
+  if (!currentAssistantDiv) {
+    currentAssistantDiv = addMessage('assistant', '');
+  }
+  currentAssistantDiv.textContent += chunk;
+  const c = document.getElementById('transcript-container');
+  c.scrollTop = c.scrollHeight;
+}
+
+function finalizeAssistant() {
+  currentAssistantDiv = null;
+}
+
+// ── Mode ────────────────────────────────────────────────────────────────────
+
+function setMode(m) {
+  mode = m;
+  document.getElementById('btn-ptt').classList.toggle('active', m === 'ptt');
+  document.getElementById('btn-vad').classList.toggle('active', m === 'vad');
+  document.getElementById('btn-hint').textContent = m === 'ptt' ? 'Hold to talk' : 'Click to start';
+  
+  // If switching to VAD while listening, keep going; if switching to PTT, no change
+}
+
+// ── Mic controls ─────────────────────────────────────────────────────────────
+
+async function startMic() {
+  if (state === 'listening') return;
+  
+  try {
+    mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+  } catch(e) {
+    showError('Microphone access denied: ' + e.message);
+    return;
+  }
+
+  audioContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 16000 });
+  await audioContext.audioWorklet.addModule('/audio-processor.js');
+  
+  const source = audioContext.createMediaStreamSource(mediaStream);
+  
+  analyser = audioContext.createAnalyser();
+  analyser.fftSize = 256;
+  source.connect(analyser);
+
+  processor = new AudioWorkletNode(audioContext, 'pcm-processor');
+  source.connect(processor);
+  
+  processor.port.onmessage = (e) => {
+    const int16 = e.data;
+    const b64 = int16ToBase64(int16);
+    send({ type: 'audio', data: b64 });
+  };
+
+  send({ type: 'start' });
+  startVolumeViz();
+}
+
+function stopMic() {
+  if (processor) { processor.disconnect(); processor = null; }
+  if (analyser) { analyser.disconnect(); analyser = null; }
+  if (audioContext) { audioContext.close(); audioContext = null; }
+  if (mediaStream) { mediaStream.getTracks().forEach(t => t.stop()); mediaStream = null; }
+  stopVolumeViz();
+  
+  if (state === 'listening') {
+    send({ type: 'stop' });
+    setState('idle');
+  }
+}
+
+// ── Button handlers ──────────────────────────────────────────────────────────
+
+let pttActive = false;
+let vadActive = false;
+
+function btnTouchStart(e) {
+  e.preventDefault();
+  if (mode === 'ptt') {
+    pttActive = true;
+    startMic();
+  }
+}
+
+function btnTouchEnd(e) {
+  e.preventDefault();
+  if (mode === 'ptt' && pttActive) {
+    pttActive = false;
+    stopMic();
+  }
+}
+
+function btnMouseDown() {
+  if (mode === 'ptt') {
+    pttActive = true;
+    startMic();
+  }
+}
+
+function btnMouseUp() {
+  if (mode === 'ptt' && pttActive) {
+    pttActive = false;
+    stopMic();
+  }
+}
+
+// For VAD mode — click to toggle
+document.getElementById('main-btn').addEventListener('click', () => {
+  if (mode !== 'vad') return;
+  if (state === 'idle') {
+    vadActive = true;
+    startMic();
+  } else if (state === 'listening') {
+    vadActive = false;
+    stopMic();
+  }
+});
+
+// ── Volume visualizer ────────────────────────────────────────────────────────
+
+let vizTimer = null;
+const volBars = ['vb1','vb2','vb3','vb4','vb5'];
+const heights = [6,10,14,10,6];
+
+function startVolumeViz() {
+  const dataArr = new Uint8Array(32);
+  vizTimer = setInterval(() => {
+    if (!analyser) return;
+    analyser.getByteFrequencyData(dataArr);
+    const avg = dataArr.reduce((a,b) => a+b, 0) / dataArr.length;
+    const norm = Math.min(avg / 80, 1);
+    volBars.forEach((id, i) => {
+      const variation = (Math.random() * 0.4 + 0.8);
+      const h = Math.max(4, Math.round(norm * heights[i] * 4 * variation));
+      document.getElementById(id).style.height = h + 'px';
+    });
+  }, 60);
+}
+
+function stopVolumeViz() {
+  if (vizTimer) { clearInterval(vizTimer); vizTimer = null; }
+  volBars.forEach(id => document.getElementById(id).style.height = '4px');
+}
+
+// ── Audio playback (base64 mp3 chunks) ───────────────────────────────────────
+
+let audioBuffer = '';
+let audioFlushTimer = null;
+
+function queueAudio(b64chunk) {
+  audioBuffer += b64chunk;
+  if (audioFlushTimer) clearTimeout(audioFlushTimer);
+  audioFlushTimer = setTimeout(flushAudio, 50);
+}
+
+function flushAudio() {
+  if (!audioBuffer) return;
+  const data = audioBuffer;
+  audioBuffer = '';
+  audioQueue.push(data);
+  if (!isPlayingAudio) playNext();
+}
+
+async function playNext() {
+  if (audioQueue.length === 0) {
+    isPlayingAudio = false;
+    return;
+  }
+  isPlayingAudio = true;
+  const b64 = audioQueue.shift();
+  
+  try {
+    const binary = atob(b64);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+
+    if (!audioCtxForPlayback) {
+      audioCtxForPlayback = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    if (audioCtxForPlayback.state === 'suspended') {
+      await audioCtxForPlayback.resume();
+    }
+
+    const decoded = await audioCtxForPlayback.decodeAudioData(bytes.buffer);
+    const source = audioCtxForPlayback.createBufferSource();
+    source.buffer = decoded;
+    source.connect(audioCtxForPlayback.destination);
+    source.start();
+    source.onended = playNext;
+  } catch(e) {
+    console.error('Audio playback error:', e);
+    playNext();
+  }
+}
+
+// ── Helpers ──────────────────────────────────────────────────────────────────
+
+function int16ToBase64(int16Array) {
+  const bytes = new Uint8Array(int16Array.buffer);
+  let binary = '';
+  for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
+  return btoa(binary);
+}
+
+function clearHistory() {
+  send({ type: 'clearHistory' });
+}
+
+// ── Init ─────────────────────────────────────────────────────────────────────
+
+connect();
+</script>
+</body>
+</html>
