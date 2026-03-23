@@ -153,8 +153,18 @@ function handleClientConnection(clientSocket) {
       const msg = JSON.parse(raw.toString());
       if (msg.type === 'start') { isProcessing = false; startDeepgram(); }
       else if (msg.type === 'stop') {
-        if (deepgramLive) { try { deepgramLive.finish(); } catch (e) {} deepgramLive = null; }
-        send({ type: 'status', state: 'idle' });
+        const pendingText = currentTranscript.trim();
+        if (deepgramLive) {
+          try { deepgramLive.finalize(); } catch (e) {}
+          try { deepgramLive.finish(); } catch (e) {}
+          deepgramLive = null;
+        }
+        currentTranscript = '';
+        if (pendingText && !isProcessing) {
+          processUserInput(pendingText);
+        } else if (!isProcessing) {
+          send({ type: 'status', state: 'idle' });
+        }
       } else if (msg.type === 'audio') {
         if (deepgramLive && deepgramLive.getReadyState() === 1) {
           deepgramLive.send(Buffer.from(msg.data, 'base64'));
