@@ -8,301 +8,249 @@
   * { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
     --bg: #0a0e17; --surface: #111827; --border: #1f2937;
-    --accent: #3b82f6; --accent-glow: rgba(59,130,246,0.3);
-    --green: #10b981; --yellow: #f59e0b; --red: #ef4444;
+    --accent: #3b82f6; --green: #10b981; --yellow: #f59e0b; --red: #ef4444;
     --text: #f9fafb; --muted: #6b7280;
   }
   body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; min-height: 100vh; display: flex; flex-direction: column; }
   header { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 12px; background: var(--surface); }
   .logo { width: 36px; height: 36px; background: var(--accent); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
   h1 { font-size: 18px; font-weight: 700; }
-  .subtitle { font-size: 12px; color: var(--muted); margin-top: 1px; }
-  .status-badge { margin-left: auto; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; transition: all 0.3s; }
-  .status-badge.idle { background: rgba(107,114,128,0.2); color: var(--muted); }
-  .status-badge.listening { background: rgba(16,185,129,0.2); color: var(--green); }
-  .status-badge.thinking { background: rgba(245,158,11,0.2); color: var(--yellow); }
-  .status-badge.speaking { background: rgba(59,130,246,0.2); color: var(--accent); }
-  #transcript-container { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
-  .message { max-width: 85%; padding: 10px 14px; border-radius: 12px; font-size: 15px; line-height: 1.5; animation: fadeIn 0.2s ease; }
-  @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
-  .message.user { align-self: flex-end; background: var(--accent); color: white; border-bottom-right-radius: 3px; }
-  .message.assistant { align-self: flex-start; background: var(--surface); border: 1px solid var(--border); border-bottom-left-radius: 3px; }
-  .message.interim { align-self: flex-end; background: rgba(59,130,246,0.15); border: 1px dashed rgba(59,130,246,0.4); color: var(--muted); font-style: italic; border-bottom-right-radius: 3px; }
-  .thinking-dots { align-self: flex-start; padding: 12px 16px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; border-bottom-left-radius: 3px; display: flex; gap: 6px; align-items: center; }
-  .dot { width: 8px; height: 8px; background: var(--muted); border-radius: 50%; animation: bounce 1.4s infinite; }
-  .dot:nth-child(2) { animation-delay: 0.2s; }
-  .dot:nth-child(3) { animation-delay: 0.4s; }
-  @keyframes bounce { 0%, 60%, 100% { transform: translateY(0); opacity: 0.4; } 30% { transform: translateY(-8px); opacity: 1; } }
-  .controls { padding: 20px; background: var(--surface); border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 12px; align-items: center; }
-  .mode-toggle { display: flex; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
-  .mode-btn { padding: 6px 16px; background: none; border: none; color: var(--muted); cursor: pointer; transition: all 0.2s; font-size: 13px; }
-  .mode-btn.active { background: var(--accent); color: white; }
-  #main-btn { width: 80px; height: 80px; border-radius: 50%; border: none; background: var(--accent); color: white; font-size: 28px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; -webkit-tap-highlight-color: transparent; user-select: none; }
-  #main-btn.listening { background: var(--red); animation: pulse 1.5s infinite; }
-  #main-btn.thinking, #main-btn.speaking { background: var(--yellow); cursor: default; }
-  @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(239,68,68,0.5); } 70% { box-shadow: 0 0 0 16px rgba(239,68,68,0); } 100% { box-shadow: 0 0 0 0 rgba(239,68,68,0); } }
-  .btn-hint { font-size: 12px; color: var(--muted); text-align: center; }
-  .bottom-row { display: flex; gap: 16px; align-items: center; }
-  .icon-btn { background: var(--bg); border: 1px solid var(--border); color: var(--muted); border-radius: 8px; padding: 8px 14px; cursor: pointer; font-size: 13px; }
-  .volume-bars { display: flex; gap: 3px; align-items: center; height: 24px; }
-  .vol-bar { width: 4px; background: var(--accent); border-radius: 2px; transition: height 0.08s; opacity: 0.7; height: 4px; }
-  #error-banner { display: none; background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.4); color: #fca5a5; padding: 10px 16px; font-size: 13px; text-align: center; }
+  .sub { font-size: 12px; color: var(--muted); margin-top: 1px; }
+  .badge { margin-left: auto; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; transition: all .3s; }
+  .badge.idle { background: rgba(107,114,128,.2); color: var(--muted); }
+  .badge.listening { background: rgba(16,185,129,.2); color: var(--green); }
+  .badge.thinking { background: rgba(245,158,11,.2); color: var(--yellow); }
+  .badge.speaking { background: rgba(59,130,246,.2); color: var(--accent); }
+  #chat { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+  .msg { max-width: 85%; padding: 10px 14px; border-radius: 12px; font-size: 15px; line-height: 1.5; }
+  .msg.user { align-self: flex-end; background: var(--accent); color: #fff; border-bottom-right-radius: 3px; }
+  .msg.ai { align-self: flex-start; background: var(--surface); border: 1px solid var(--border); border-bottom-left-radius: 3px; }
+  .msg.interim { align-self: flex-end; background: rgba(59,130,246,.12); border: 1px dashed rgba(59,130,246,.4); color: var(--muted); font-style: italic; border-bottom-right-radius: 3px; }
+  .dots { align-self: flex-start; padding: 12px 16px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; border-bottom-left-radius: 3px; display: flex; gap: 6px; align-items: center; }
+  .dot { width: 8px; height: 8px; background: var(--muted); border-radius: 50%; animation: bonce 1.4s infinite; }
+  .dot:nth-child(2) { animation-delay: .2s; }
+  .dot:nth-child(3) { animation-delay: .4s; }
+  @keyframes bonce { 0%,60%,100%{transform:translateY(0);opacity:.4} 30%{transform:translateY(-8px);opacity:1} }
+  .controls { padding: 24px 20px; background: var(--surface); border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 14px; align-items: center; }
+  .mode-row { display: flex; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+  .mode-btn { padding: 7px 20px; background: none; border: none; color: var(--muted); cursor: pointer; font-size: 13px; transition: all .2s; }
+  .mode-btn.on { background: var(--accent); color: #fff; }
+  #micbtn { width: 84px; height: 84px; border-radius: 50%; border: none; background: var(--accent); color: #fff; font-size: 30px; cursor: pointer; transition: all .2s; -webkit-tap-highlight-color: transparent; user-select: none; display: flex; align-items: center; justify-content: center; }
+  #micbtn.listening { background: var(--red); animation: pulse 1.5s infinite; }
+  #micbtn.thinking, #micbtn.speaking { background: var(--yellow); cursor: default; }
+  @keyframes pulse { 0%{box-shadow:0 0 0 0 rgba(239,68,68,.5)} 70%{box-shadow:0 0 0 18px rgba(239,68,68,0)} 100%{box-shadow:0 0 0 0 rgba(239,68,68,0)} }
+  .hint { font-size: 12px; color: var(--muted); }
+  .clr-btn { background: var(--bg); border: 1px solid var(--border); color: var(--muted); border-radius: 8px; padding: 8px 16px; cursor: pointer; font-size: 13px; }
+  #err { display:none; background: rgba(239,68,68,.15); border: 1px solid rgba(239,68,68,.4); color: #fca5a5; padding: 10px 16px; font-size: 13px; text-align: center; }
 </style>
 </head>
 <body>
 <header>
   <div class="logo">🎙</div>
-  <div><h1>QF Voice Assistant</h1><div class="subtitle">QuotingFast AI</div></div>
-  <div class="status-badge idle" id="status-badge">Idle</div>
+  <div><h1>QF Voice Assistant</h1><div class="sub">QuotingFast AI</div></div>
+  <div class="badge idle" id="badge">Idle</div>
 </header>
-<div id="error-banner"></div>
-<div id="transcript-container">
-  <div class="message assistant">Hey Tom! Tap the mic and start talking.</div>
+<div id="err"></div>
+<div id="chat">
+  <div class="msg ai">Hey Tom! Tap and hold the mic to talk. I'll speak back to you.</div>
 </div>
 <div class="controls">
-  <div class="mode-toggle">
-    <button class="mode-btn active" id="btn-ptt" onclick="setMode('ptt')">Push to Talk</button>
-    <button class="mode-btn" id="btn-vad" onclick="setMode('vad')">Auto VAD</button>
+  <div class="mode-row">
+    <button class="mode-btn on" id="ptt-btn" onclick="setMode('ptt')">Hold to Talk</button>
+    <button class="mode-btn" id="vad-btn" onclick="setMode('vad')">Auto Listen</button>
   </div>
-  <div class="bottom-row">
-    <div class="volume-bars">
-      <div class="vol-bar" id="vb1"></div><div class="vol-bar" id="vb2"></div>
-      <div class="vol-bar" id="vb3"></div><div class="vol-bar" id="vb4"></div>
-      <div class="vol-bar" id="vb5"></div>
-    </div>
-    <button id="main-btn">🎙</button>
-  </div>
-  <div class="btn-hint" id="btn-hint">Hold to talk</div>
-  <button class="icon-btn" onclick="clearHistory()">🗑 Clear Chat</button>
+  <button id="micbtn">🎙</button>
+  <div class="hint" id="hint">Hold button to speak</div>
+  <button class="clr-btn" onclick="clearChat()">🗑 Clear</button>
 </div>
+
+<!-- Hidden audio element — most reliable cross-browser/mobile playback -->
+<audio id="player" playsinline style="display:none"></audio>
 
 <script>
 let ws = null;
 let mode = 'ptt';
 let state = 'idle';
 let mediaStream = null;
-let audioContext = null;
+let audioCtx = null;
 let processor = null;
 let analyser = null;
-let vizTimer = null;
-let interimDiv = null;
-let thinkingDiv = null;
-let currentAssistantDiv = null;
+let interimEl = null;
+let thinkingEl = null;
+let aiEl = null;
 
-// Audio playback
-let audioCtx = null;
-let mp3Chunks = [];   // accumulate base64 chunks
-let isPlayingAudio = false;
-let audioQueue = [];  // queue of complete Uint8Array blobs
+// Audio — collect all chunks then play as one blob
+let audioChunks = [];
+const player = document.getElementById('player');
 
-// ── WebSocket ──────────────────────────────────────────────────────────────
+// ── WS ─────────────────────────────────────────────────────────────────────
 function connect() {
   const proto = location.protocol === 'https:' ? 'wss' : 'ws';
   ws = new WebSocket(`${proto}://${location.host}/ws`);
-  ws.onopen = () => console.log('WS connected');
-  ws.onmessage = (e) => handleMessage(JSON.parse(e.data));
+  ws.onopen = () => console.log('connected');
+  ws.onmessage = e => handle(JSON.parse(e.data));
   ws.onclose = () => setTimeout(connect, 2000);
-  ws.onerror = (e) => console.error('WS error', e);
+  ws.onerror = e => console.error(e);
 }
+function send(o) { if (ws && ws.readyState === 1) ws.send(JSON.stringify(o)); }
 
-function send(obj) {
-  if (ws && ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify(obj));
-}
-
-// ── Messages ──────────────────────────────────────────────────────────────
-function handleMessage(msg) {
-  switch (msg.type) {
-    case 'status': setState(msg.state); break;
-    case 'transcript': showInterim(msg.text, msg.isFinal); break;
+// ── Message handler ────────────────────────────────────────────────────────
+function handle(m) {
+  switch (m.type) {
+    case 'status': setStatus(m.state); break;
+    case 'transcript': onTranscript(m.text, m.isFinal); break;
     case 'userMessage':
-      showInterim(null);
-      addMessage('user', msg.text);
-      showThinking(true);
+      onTranscript(null);
+      addMsg('user', m.text);
+      showDots(true);
       break;
     case 'assistantChunk':
-      showThinking(false);
-      appendAssistant(msg.text);
+      showDots(false);
+      appendAI(m.text);
       break;
     case 'assistantDone':
-      currentAssistantDiv = null;
+      aiEl = null;
       break;
     case 'audio':
-      if (msg.final) {
-        flushMp3();
-      } else if (msg.data) {
-        mp3Chunks.push(msg.data);
-      }
+      if (m.final) playCollected();
+      else if (m.data) audioChunks.push(m.data);
       break;
     case 'historyCleared':
-      document.getElementById('transcript-container').innerHTML = '<div class="message assistant">History cleared.</div>';
+      document.getElementById('chat').innerHTML = '<div class="msg ai">History cleared. Go ahead.</div>';
       break;
-    case 'error': showError(msg.message); break;
+    case 'error': showErr(m.message); break;
   }
 }
 
-// ── Audio playback ─────────────────────────────────────────────────────────
-function flushMp3() {
-  if (mp3Chunks.length === 0) return;
-  // Combine all base64 chunks into one binary blob
-  const combined = mp3Chunks.join('');
-  mp3Chunks = [];
-  const binary = atob(combined);
-  const bytes = new Uint8Array(binary.length);
-  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-  audioQueue.push(bytes.buffer);
-  if (!isPlayingAudio) playNext();
-}
+// ── Audio playback — blob URL approach, works everywhere ──────────────────
+function playCollected() {
+  if (!audioChunks.length) return;
+  const b64 = audioChunks.join('');
+  audioChunks = [];
 
-async function playNext() {
-  if (audioQueue.length === 0) { isPlayingAudio = false; return; }
-  isPlayingAudio = true;
-  const buf = audioQueue.shift();
   try {
-    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    if (audioCtx.state === 'suspended') await audioCtx.resume();
-    const decoded = await audioCtx.decodeAudioData(buf);
-    const src = audioCtx.createBufferSource();
-    src.buffer = decoded;
-    src.connect(audioCtx.destination);
-    src.start();
-    src.onended = playNext;
-  } catch (e) {
-    console.error('Playback error:', e);
-    playNext();
+    const raw = atob(b64);
+    const buf = new Uint8Array(raw.length);
+    for (let i = 0; i < raw.length; i++) buf[i] = raw.charCodeAt(i);
+    const blob = new Blob([buf], { type: 'audio/mpeg' });
+    const url = URL.createObjectURL(blob);
+
+    player.src = url;
+    player.onended = () => URL.revokeObjectURL(url);
+    player.play().catch(e => {
+      // Autoplay blocked — user needs to interact first; show a tap-to-hear button
+      showErr('Tap anywhere to unmute audio');
+      document.body.addEventListener('click', () => { player.play(); }, { once: true });
+    });
+  } catch(e) {
+    console.error('Audio play error:', e);
+    showErr('Audio error: ' + e.message);
   }
 }
 
-// ── UI State ──────────────────────────────────────────────────────────────
-function setState(s) {
+// ── Status / UI ───────────────────────────────────────────────────────────
+function setStatus(s) {
   state = s;
-  const badge = document.getElementById('status-badge');
-  const btn = document.getElementById('main-btn');
-  const hint = document.getElementById('btn-hint');
-  badge.className = 'status-badge ' + s;
+  const badge = document.getElementById('badge');
+  const btn = document.getElementById('micbtn');
+  const hint = document.getElementById('hint');
+  badge.className = 'badge ' + s;
   badge.textContent = s.charAt(0).toUpperCase() + s.slice(1);
-  btn.className = s !== 'idle' ? s : '';
-  if (s === 'listening') { btn.textContent = '🔴'; hint.textContent = mode === 'ptt' ? 'Release to stop' : 'Tap to stop'; }
-  else if (s === 'thinking') { btn.textContent = '⏳'; hint.textContent = 'Thinking...'; }
-  else if (s === 'speaking') { btn.textContent = '🔊'; hint.textContent = 'Speaking...'; }
-  else { btn.textContent = '🎙'; hint.textContent = mode === 'ptt' ? 'Hold to talk' : 'Tap to start'; }
+  btn.className = (s !== 'idle' ? s : '');
+  if (s === 'listening')      { btn.textContent = '🔴'; hint.textContent = mode === 'ptt' ? 'Release to send' : 'Tap to stop'; }
+  else if (s === 'thinking')  { btn.textContent = '⏳'; hint.textContent = 'Thinking...'; }
+  else if (s === 'speaking')  { btn.textContent = '🔊'; hint.textContent = 'Speaking...'; }
+  else                        { btn.textContent = '🎙'; hint.textContent = mode === 'ptt' ? 'Hold button to speak' : 'Tap to start listening'; }
 }
 
-function showError(msg) {
-  const b = document.getElementById('error-banner');
-  b.textContent = '⚠️ ' + msg; b.style.display = 'block';
-  setTimeout(() => b.style.display = 'none', 6000);
+function showErr(msg) {
+  const el = document.getElementById('err');
+  el.textContent = '⚠️ ' + msg; el.style.display = 'block';
+  setTimeout(() => el.style.display = 'none', 7000);
 }
 
-function showInterim(text) {
-  const c = document.getElementById('transcript-container');
-  if (!text) { if (interimDiv) { interimDiv.remove(); interimDiv = null; } return; }
-  if (!interimDiv) { interimDiv = document.createElement('div'); interimDiv.className = 'message interim'; c.appendChild(interimDiv); }
-  interimDiv.textContent = text;
+function onTranscript(text) {
+  const c = document.getElementById('chat');
+  if (!text) { if (interimEl) { interimEl.remove(); interimEl = null; } return; }
+  if (!interimEl) { interimEl = document.createElement('div'); interimEl.className = 'msg interim'; c.appendChild(interimEl); }
+  interimEl.textContent = text;
   c.scrollTop = c.scrollHeight;
 }
 
-function showThinking(show) {
-  const c = document.getElementById('transcript-container');
-  if (show && !thinkingDiv) {
-    thinkingDiv = document.createElement('div');
-    thinkingDiv.className = 'thinking-dots';
-    thinkingDiv.innerHTML = '<div class="dot"></div><div class="dot"></div><div class="dot"></div>';
-    c.appendChild(thinkingDiv); c.scrollTop = c.scrollHeight;
-  } else if (!show && thinkingDiv) { thinkingDiv.remove(); thinkingDiv = null; }
+function showDots(show) {
+  const c = document.getElementById('chat');
+  if (show && !thinkingEl) {
+    thinkingEl = document.createElement('div');
+    thinkingEl.className = 'dots';
+    thinkingEl.innerHTML = '<div class="dot"></div><div class="dot"></div><div class="dot"></div>';
+    c.appendChild(thinkingEl); c.scrollTop = c.scrollHeight;
+  } else if (!show && thinkingEl) { thinkingEl.remove(); thinkingEl = null; }
 }
 
-function addMessage(role, text) {
-  const c = document.getElementById('transcript-container');
-  const div = document.createElement('div');
-  div.className = 'message ' + role;
-  div.textContent = text;
-  c.appendChild(div); c.scrollTop = c.scrollHeight;
-  return div;
+function addMsg(role, text) {
+  const c = document.getElementById('chat');
+  const d = document.createElement('div');
+  d.className = 'msg ' + (role === 'user' ? 'user' : 'ai');
+  d.textContent = text;
+  c.appendChild(d); c.scrollTop = c.scrollHeight;
+  return d;
 }
 
-function appendAssistant(chunk) {
-  if (!currentAssistantDiv) currentAssistantDiv = addMessage('assistant', '');
-  currentAssistantDiv.textContent += chunk;
-  document.getElementById('transcript-container').scrollTop = 99999;
+function appendAI(chunk) {
+  if (!aiEl) aiEl = addMsg('ai', '');
+  aiEl.textContent += chunk;
+  document.getElementById('chat').scrollTop = 99999;
 }
 
 // ── Mode ──────────────────────────────────────────────────────────────────
 function setMode(m) {
   mode = m;
-  document.getElementById('btn-ptt').classList.toggle('active', m === 'ptt');
-  document.getElementById('btn-vad').classList.toggle('active', m === 'vad');
-  document.getElementById('btn-hint').textContent = m === 'ptt' ? 'Hold to talk' : 'Tap to start';
+  document.getElementById('ptt-btn').classList.toggle('on', m === 'ptt');
+  document.getElementById('vad-btn').classList.toggle('on', m === 'vad');
+  setStatus('idle');
 }
 
 // ── Mic ───────────────────────────────────────────────────────────────────
 async function startMic() {
   if (state === 'listening') return;
   try {
-    mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
-  } catch (e) { showError('Mic denied: ' + e.message); return; }
-
-  audioContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 16000 });
-  await audioContext.audioWorklet.addModule('/audio-processor.js');
-  const source = audioContext.createMediaStreamSource(mediaStream);
-  analyser = audioContext.createAnalyser(); analyser.fftSize = 256;
-  source.connect(analyser);
-  processor = new AudioWorkletNode(audioContext, 'pcm-processor');
-  source.connect(processor);
+    mediaStream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, sampleRate: 16000 }, video: false });
+  } catch(e) { showErr('Microphone: ' + e.message); return; }
+  audioCtx = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 16000 });
+  await audioCtx.audioWorklet.addModule('/audio-processor.js');
+  const src = audioCtx.createMediaStreamSource(mediaStream);
+  processor = new AudioWorkletNode(audioCtx, 'pcm-processor');
+  src.connect(processor);
   processor.port.onmessage = (e) => {
     const b64 = btoa(String.fromCharCode(...new Uint8Array(e.data.buffer)));
     send({ type: 'audio', data: b64 });
   };
   send({ type: 'start' });
-  startViz();
 }
 
 function stopMic() {
   if (processor) { processor.disconnect(); processor = null; }
-  if (analyser) { analyser.disconnect(); analyser = null; }
-  if (audioContext) { audioContext.close(); audioContext = null; }
+  if (audioCtx) { audioCtx.close(); audioCtx = null; }
   if (mediaStream) { mediaStream.getTracks().forEach(t => t.stop()); mediaStream = null; }
-  stopViz();
-  if (state === 'listening') { send({ type: 'stop' }); setState('idle'); }
+  if (state === 'listening') { send({ type: 'stop' }); setStatus('idle'); }
 }
 
-// ── Volume viz ────────────────────────────────────────────────────────────
-const VB = ['vb1','vb2','vb3','vb4','vb5'];
-const VH = [6, 10, 14, 10, 6];
-function startViz() {
-  const data = new Uint8Array(32);
-  vizTimer = setInterval(() => {
-    if (!analyser) return;
-    analyser.getByteFrequencyData(data);
-    const avg = data.reduce((a, b) => a + b, 0) / data.length;
-    const norm = Math.min(avg / 80, 1);
-    VB.forEach((id, i) => {
-      const h = Math.max(4, Math.round(norm * VH[i] * 4 * (0.8 + Math.random() * 0.4)));
-      document.getElementById(id).style.height = h + 'px';
-    });
-  }, 60);
-}
-function stopViz() {
-  if (vizTimer) { clearInterval(vizTimer); vizTimer = null; }
-  VB.forEach(id => document.getElementById(id).style.height = '4px');
-}
+// ── Button events ─────────────────────────────────────────────────────────
+const btn = document.getElementById('micbtn');
+let pttActive = false;
 
-// ── Button ────────────────────────────────────────────────────────────────
-let pttHeld = false;
-let vadOn = false;
-const btn = document.getElementById('main-btn');
-
-btn.addEventListener('mousedown', () => { if (mode === 'ptt') { pttHeld = true; startMic(); } });
-btn.addEventListener('mouseup', () => { if (mode === 'ptt' && pttHeld) { pttHeld = false; stopMic(); } });
-btn.addEventListener('mouseleave', () => { if (mode === 'ptt' && pttHeld) { pttHeld = false; stopMic(); } });
-btn.addEventListener('touchstart', (e) => { e.preventDefault(); if (mode === 'ptt') { pttHeld = true; startMic(); } });
-btn.addEventListener('touchend', (e) => { e.preventDefault(); if (mode === 'ptt' && pttHeld) { pttHeld = false; stopMic(); } });
+btn.addEventListener('mousedown', e => { if (mode==='ptt') { pttActive=true; startMic(); } });
+btn.addEventListener('mouseup',   e => { if (mode==='ptt' && pttActive) { pttActive=false; stopMic(); } });
+btn.addEventListener('mouseleave',e => { if (mode==='ptt' && pttActive) { pttActive=false; stopMic(); } });
+btn.addEventListener('touchstart', e => { e.preventDefault(); if (mode==='ptt') { pttActive=true; startMic(); } }, { passive:false });
+btn.addEventListener('touchend',   e => { e.preventDefault(); if (mode==='ptt' && pttActive) { pttActive=false; stopMic(); } }, { passive:false });
 btn.addEventListener('click', () => {
   if (mode !== 'vad') return;
-  if (state === 'idle') { vadOn = true; startMic(); }
-  else if (state === 'listening') { vadOn = false; stopMic(); }
+  if (state === 'idle') startMic();
+  else if (state === 'listening') stopMic();
 });
 
-function clearHistory() { send({ type: 'clearHistory' }); }
+function clearChat() { send({ type: 'clearHistory' }); }
 
 connect();
 </script>
