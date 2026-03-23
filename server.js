@@ -47,6 +47,7 @@ function handleClientConnection(clientSocket) {
     deepgramLive = dg.listen.live({
       model: 'nova-2', language: 'en-US', smart_format: true,
       interim_results: true, utterance_end_ms: 1000, vad_events: true, endpointing: 400,
+      encoding: 'linear16', sample_rate: 16000,
     });
 
     deepgramLive.on('open', () => { console.log('Deepgram open'); send({ type: 'status', state: 'listening' }); });
