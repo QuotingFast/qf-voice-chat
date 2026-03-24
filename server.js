@@ -306,7 +306,7 @@ function handleClient(sock) {
         process(txt);
       }
     });
-    dg.on('error', e => { console.error('DG:', e); send({ type: 'error', message: 'STT error' }); });
+    dg.on('error', e => { const msg = typeof e === 'string' ? e : (e?.message || JSON.stringify(e)); console.error('DG error:', msg); send({ type: 'error', message: 'STT: ' + msg }); });
   }
 
   async function process(text) {
